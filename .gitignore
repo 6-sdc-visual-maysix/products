@@ -1,0 +1,7 @@
+node_modules/
+*.DS_Store
+docs
+config.js
+cleanAndSeed
+cleanSamples
+test
