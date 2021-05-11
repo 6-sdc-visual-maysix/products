@@ -4,6 +4,10 @@ const app = express();
 
 const cors = require('cors');
 
+const {port} = require('./config');
+
+require('newrelic');
+
 const {
   getProducts,
   getProduct,
@@ -14,8 +18,6 @@ const {
 // middleware
 app.use(cors());
 app.use(express.json());
-
-app.set('port', 3000);
 
 // get id's of related products
 app.get('/products/:product_id/related', getRelated);
@@ -35,8 +37,8 @@ app.get('/',
   });
 
 if (!module.parent) {
-  app.listen(app.get('port'));
-  console.log('Listening on', app.get('port'));
+  app.listen(port);
+  console.log('Listening on', port);
 }
 
 module.exports.app = app;
