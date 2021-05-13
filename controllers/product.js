@@ -1,32 +1,15 @@
-const LRU = require('lru-cache');
 const pool = require('../db/db');
-
-// Settings for caching
-const options = {
-  max: 500,
-  length(n, key) { return n * 2 + key.length; },
-  dispose(key, n) { n = ''; },
-  maxAge: 1000 * 60 * 60,
-};
-
-// Caches
-const stylesCache = new LRU(options);
-const relatedCache = new LRU(options);
-const productCache = new LRU(options);
 
 exports.getRelated = async (req, res) => {
   try {
     const productId = req.params.product_id;
-    let returnData = relatedCache.get(productId);
-
-    if (returnData) { return res.status(200).send(returnData); }
 
     pool.query(`
     SELECT related_product_id
     FROM related
     WHERE current_product_id = $1;`, [productId])
       .then((results) => {
-        returnData = results.rows.map((row) => row.related_product_id);
+        const returnData = results.rows.map((row) => row.related_product_id);
         res.send(returnData);
       });
   } catch (err) {
@@ -37,11 +20,6 @@ exports.getRelated = async (req, res) => {
 exports.getStyles = async (req, res) => {
   try {
     const productId = req.params.product_id;
-    let returnData = stylesCache.get(productId);
-
-    if (returnData) {
-      return res.status(200).send(returnData);
-    }
 
     const styles = pool.query(`
     SELECT *
@@ -92,11 +70,10 @@ exports.getStyles = async (req, res) => {
     styles
       .then((s) => Promise.all(s.rows.map(getStyleData)))
       .then((results) => {
-        returnData = {
+        const returnData = {
           product_id: productId,
           results,
         };
-        stylesCache.set(productId, returnData);
         res.status(200).send(returnData);
       });
   } catch (err) {
@@ -107,9 +84,6 @@ exports.getStyles = async (req, res) => {
 exports.getProduct = async (req, res) => {
   try {
     const productId = req.params.product_id;
-    let returnData = productCache.get(productId);
-
-    if (returnData) { return res.status(200).send(returnData); }
 
     const results = await pool.query(`
     SELECT
@@ -137,7 +111,7 @@ exports.getProduct = async (req, res) => {
       });
     });
 
-    returnData = {
+    const returnData = {
       id: results.rows[0].id,
       campus: 'hr-sfo',
       name: results.rows[0].name,
